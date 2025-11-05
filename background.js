@@ -216,6 +216,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           sendResponse(await askOpenAI(prompt, apiKey));
           break;
 
+        case "ASK_AI":
+          // React App.js handler - retrieves API key from storage
+          chrome.storage.local.get(["openaiApiKey"], async (data) => {
+            const storedApiKey = data.openaiApiKey;
+            if (!storedApiKey) {
+              sendResponse({
+                success: false,
+                error: "OpenAI API key not found. Please set it in the extension popup."
+              });
+              return;
+            }
+            const result = await askOpenAI(request.prompt, storedApiKey);
+            sendResponse({
+              success: result.success,
+              answer: result.content,
+              error: result.error
+            });
+          });
+          break;
+
         default:
           console.warn("⚠️ Unknown request type:", request.type);
           sendResponse({ success: false, error: "Unknown request type." });
