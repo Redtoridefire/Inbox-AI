@@ -1,4 +1,12 @@
 // content.js
+// === INJECT CSS ===
+(function injectCSS() {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = chrome.runtime.getURL('content.css');
+  (document.head || document.documentElement).appendChild(link);
+})();
+
 // === INJECT THE SCRIPT INTO THE PAGE ===
 (function injectScript() {
   const script = document.createElement('script');
