@@ -1,12 +1,9 @@
 // content.js
-console.log("InboxAI content script loaded");
-
 // === INJECT THE SCRIPT INTO THE PAGE ===
 (function injectScript() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('inject.js');
   script.onload = function() {
-    console.log("inject.js loaded successfully");
     this.remove();
   };
   (document.head || document.documentElement).appendChild(script);
@@ -21,7 +18,12 @@ window.addEventListener("message", (event) => {
   // === Storage request ===
   if (msg.type === "INBOXAI_GET_STORAGE") {
     chrome.storage.local.get(msg.keys, (data) => {
-      window.postMessage({ type: "INBOXAI_STORAGE_RESPONSE", data }, "*");
+      if (chrome.runtime.lastError) {
+        console.error("Storage get error:", chrome.runtime.lastError);
+        window.postMessage({ type: "INBOXAI_STORAGE_RESPONSE", data: {}, error: chrome.runtime.lastError.message }, window.location.origin);
+      } else {
+        window.postMessage({ type: "INBOXAI_STORAGE_RESPONSE", data }, window.location.origin);
+      }
     });
   }
 
@@ -34,10 +36,18 @@ window.addEventListener("message", (event) => {
         apiKey: msg.apiKey,
       },
       (response) => {
-        window.postMessage(
-          { type: "INBOXAI_OPENAI_RESPONSE", data: response },
-          "*"
-        );
+        if (chrome.runtime.lastError) {
+          console.error("Runtime message error:", chrome.runtime.lastError);
+          window.postMessage(
+            { type: "INBOXAI_OPENAI_RESPONSE", data: { success: false, error: chrome.runtime.lastError.message } },
+            window.location.origin
+          );
+        } else {
+          window.postMessage(
+            { type: "INBOXAI_OPENAI_RESPONSE", data: response },
+            window.location.origin
+          );
+        }
       }
     );
   }
@@ -45,33 +55,47 @@ window.addEventListener("message", (event) => {
   // === Calendar request forwarding (with query for date parsing) ===
   if (msg.type === "INBOXAI_REQUEST_CALENDAR") {
     chrome.runtime.sendMessage(
-      { 
+      {
         type: "GET_CALENDAR_EVENTS",
         query: msg.query || ""
       },
       (response) => {
-        window.postMessage(
-          { type: "INBOXAI_CALENDAR_RESPONSE", data: response },
-          "*"
-        );
+        if (chrome.runtime.lastError) {
+          console.error("Runtime message error:", chrome.runtime.lastError);
+          window.postMessage(
+            { type: "INBOXAI_CALENDAR_RESPONSE", data: { success: false, error: chrome.runtime.lastError.message } },
+            window.location.origin
+          );
+        } else {
+          window.postMessage(
+            { type: "INBOXAI_CALENDAR_RESPONSE", data: response },
+            window.location.origin
+          );
+        }
       }
     );
   }
 
   // === Gmail search forwarding (NEW) ===
   if (msg.type === "INBOXAI_SEARCH_GMAIL") {
-    console.log("🔍 Content script: Forwarding Gmail search request:", msg.searchQuery);
     chrome.runtime.sendMessage(
       {
         type: "SEARCH_GMAIL",
         searchQuery: msg.searchQuery
       },
       (response) => {
-        console.log("📧 Content script: Gmail search response received:", response);
-        window.postMessage(
-          { type: "INBOXAI_GMAIL_SEARCH_RESPONSE", data: response },
-          "*"
-        );
+        if (chrome.runtime.lastError) {
+          console.error("Runtime message error:", chrome.runtime.lastError);
+          window.postMessage(
+            { type: "INBOXAI_GMAIL_SEARCH_RESPONSE", data: { success: false, error: chrome.runtime.lastError.message } },
+            window.location.origin
+          );
+        } else {
+          window.postMessage(
+            { type: "INBOXAI_GMAIL_SEARCH_RESPONSE", data: response },
+            window.location.origin
+          );
+        }
       }
     );
   }
@@ -89,9 +113,7 @@ window.addEventListener("message", (event) => {
 
     window.postMessage(
       { type: "INBOXAI_INBOX_CONTEXT", data: threads },
-      "*"
+      window.location.origin
     );
   }
 });
-
-console.log("InboxAI bridge ready between inject.js and background.js");
