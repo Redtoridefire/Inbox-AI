@@ -1,4 +1,6 @@
 // inject.js
+console.log("🚀 InboxAI: inject.js executing");
+
 (function () {
   // ========== CHECK OR CREATE CONTAINER ==========
   let container = document.getElementById("inboxai-root");
@@ -6,6 +8,9 @@
     container = document.createElement("div");
     container.id = "inboxai-root";
     document.body.appendChild(container);
+    console.log("✅ InboxAI: Created #inboxai-root container");
+  } else {
+    console.log("✅ InboxAI: Found existing #inboxai-root container");
   }
 
   // ========== LOAD MINIMIZED STATE ==========
@@ -93,6 +98,10 @@
   mainContainer.appendChild(header);
   mainContainer.appendChild(contentWrapper);
   container.appendChild(mainContainer);
+
+  console.log("✅ InboxAI: UI elements created and appended to DOM");
+  console.log("✅ InboxAI: Container classes:", container.className);
+  console.log("✅ InboxAI: Minimized state:", isMinimized);
 
   // ========== STATUS MESSAGE HELPER ==========
   const addStatusMessage = (text, type = "info") => {
