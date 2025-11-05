@@ -1,6 +1,4 @@
 // inject.js
-console.log("InboxAI Inject Script Loaded");
-
 (function () {
   // ========== CHECK OR CREATE CONTAINER ==========
   let container = document.getElementById("inboxai-root");
@@ -108,15 +106,13 @@ console.log("InboxAI Inject Script Loaded");
     const body = document.createElement("div");
     body.style.color = "#c9d1d9";
     body.style.marginTop = "4px";
-    
-    // Convert markdown-style formatting to HTML
-    let formattedText = text
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // Bold
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')              // Italic
-      .replace(/\n/g, '<br>')                             // Line breaks
-      .replace(/^\d+\.\s/gm, '• ');                      // Convert numbered lists to bullets
-    
-    body.innerHTML = formattedText;
+    body.style.whiteSpace = "pre-wrap";
+
+    // Use textContent to prevent XSS vulnerabilities
+    // Basic formatting: convert numbered lists to bullets
+    let formattedText = text.replace(/^\d+\.\s/gm, '• ');
+    body.textContent = formattedText;
+
     msg.append(label, body);
     chatArea.appendChild(msg);
     chatArea.scrollTop = chatArea.scrollHeight;
@@ -131,15 +127,17 @@ console.log("InboxAI Inject Script Loaded");
 
   // ========== REQUEST API KEY ==========
   function requestApiKey() {
-    window.postMessage({ type: "INBOXAI_GET_STORAGE", keys: ["openaiApiKey"] }, "*");
+    window.postMessage({ type: "INBOXAI_GET_STORAGE", keys: ["openaiApiKey"] }, window.location.origin);
   }
   let tries = 0;
+  const maxRetries = 5;
   const retry = setInterval(() => {
-    if (openaiApiKey || tries > 5) clearInterval(retry);
-    else {
-      requestApiKey();
-      tries++;
+    if (openaiApiKey || tries >= maxRetries) {
+      clearInterval(retry);
+      return;
     }
+    requestApiKey();
+    tries++;
   }, 1000);
   requestApiKey();
 
@@ -200,25 +198,23 @@ console.log("InboxAI Inject Script Loaded");
   async function fetchRelevantData(userInput) {
     const { hasCalendarIntent, hasEmailIntent } = detectQueryIntent(userInput);
     const promises = [];
-    
-    console.log("🔍 Query intent:", { hasCalendarIntent, hasEmailIntent });
-    
+
     // Fetch calendar if needed
     if (hasCalendarIntent) {
       addMessage("System", "🔍 Checking calendar...", "#9be9a8");
       const calendarPromise = new Promise((resolve) => {
         const handler = (event) => {
           if (event.data?.type === "INBOXAI_CALENDAR_RESPONSE") {
-            console.log("📅 Calendar response received");
             window.removeEventListener("message", handler);
+            clearTimeout(timeoutId);
             resolve();
           }
         };
         window.addEventListener("message", handler);
-        window.postMessage({ type: "INBOXAI_REQUEST_CALENDAR", query: userInput }, "*");
+        window.postMessage({ type: "INBOXAI_REQUEST_CALENDAR", query: userInput }, window.location.origin);
         // Timeout after 5 seconds
-        setTimeout(() => {
-          console.log("⏱️ Calendar request timed out");
+        const timeoutId = setTimeout(() => {
+          window.removeEventListener("message", handler);
           resolve();
         }, 5000);
       });
@@ -229,32 +225,29 @@ console.log("InboxAI Inject Script Loaded");
     if (hasEmailIntent) {
       const searchTerms = extractSearchTerms(userInput);
       if (searchTerms) {
-        console.log("🔍 Extracted search terms:", searchTerms);
         addMessage("System", `🔍 Searching emails for: "${searchTerms}"`, "#9be9a8");
         const gmailPromise = new Promise((resolve) => {
           const handler = (event) => {
             if (event.data?.type === "INBOXAI_GMAIL_SEARCH_RESPONSE") {
-              console.log("📧 Gmail response received");
               window.removeEventListener("message", handler);
+              clearTimeout(timeoutId);
               resolve();
             }
           };
           window.addEventListener("message", handler);
-          window.postMessage({ type: "INBOXAI_SEARCH_GMAIL", searchQuery: searchTerms }, "*");
+          window.postMessage({ type: "INBOXAI_SEARCH_GMAIL", searchQuery: searchTerms }, window.location.origin);
           // Timeout after 5 seconds
-          setTimeout(() => {
-            console.log("⏱️ Gmail search timed out");
+          const timeoutId = setTimeout(() => {
+            window.removeEventListener("message", handler);
             resolve();
           }, 5000);
         });
         promises.push(gmailPromise);
       }
     }
-    
+
     // Wait for all data to be fetched
-    console.log("⏳ Waiting for", promises.length, "request(s) to complete");
     await Promise.all(promises);
-    console.log("✅ All requests completed");
   }
 
   // ========== HANDLE RESPONSES ==========
@@ -289,7 +282,6 @@ console.log("InboxAI Inject Script Loaded");
     }
 
     if (msg.type === "INBOXAI_GMAIL_SEARCH_RESPONSE") {
-      console.log("📧 Gmail search response received:", msg.data);
       const { success, messages, query, error } = msg.data || {};
       
       if (!success) {
@@ -316,13 +308,6 @@ console.log("InboxAI Inject Script Loaded");
 
   // ========== BUILD PROMPT ==========
   function buildPrompt(userInput) {
-    console.log("📝 Building prompt with data:", {
-      calendarEvents: calendarEvents.length,
-      gmailSearchResults: gmailSearchResults.length,
-      currentEmail: !!currentEmail,
-      inboxOverview: inboxOverview.length
-    });
-    
     let systemContext = "You are InboxAI, an AI assistant with access to the user's Gmail and Google Calendar data.\n\n";
     let dataContext = "";
     let availableData = [];
@@ -346,7 +331,6 @@ console.log("InboxAI Inject Script Loaded");
         .map((e, i) => `${i + 1}. From: ${e.from}\n   Subject: ${e.subject}\n   Date: ${e.date}\n   Preview: ${e.snippet}`)
         .join("\n\n");
       dataContext += `=== EMAIL SEARCH RESULTS ===\n${searchList}\n\n`;
-      console.log("✉️ Including", gmailSearchResults.length, "Gmail search results in prompt");
     } else if (currentEmail) {
       availableData.push("current email");
       dataContext += `=== CURRENT EMAIL ===\nFrom: ${currentEmail.sender}\nSubject: ${currentEmail.subject}\nBody: ${currentEmail.body}\n\n`;
@@ -366,9 +350,8 @@ console.log("InboxAI Inject Script Loaded");
     } else {
       systemContext += "No email or calendar data is currently loaded. Let the user know you need them to grant permissions or that no relevant data was found.\n\n";
     }
-    
+
     const fullPrompt = `${systemContext}${dataContext}User question: ${userInput}\n\nAnswer:`;
-    console.log("📝 Prompt built with", availableData.length, "data sources");
     return fullPrompt;
   }
 
@@ -391,7 +374,7 @@ console.log("InboxAI Inject Script Loaded");
     // Now send to OpenAI with all the data
     window.postMessage(
       { type: "INBOXAI_OPENAI_CALL", prompt: buildPrompt(userInput), apiKey: openaiApiKey },
-      "*"
+      window.location.origin
     );
   });
 

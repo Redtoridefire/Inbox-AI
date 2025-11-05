@@ -1,5 +1,3 @@
-console.log("📡 InboxAI Background Script Loaded");
-
 // ====== CONFIG ======
 const OPENAI_MODEL = "gpt-4o-mini";
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
@@ -12,7 +10,6 @@ async function getAuthToken(interactive = true) {
         console.error("❌ Auth token error:", chrome.runtime.lastError);
         reject(chrome.runtime.lastError);
       } else {
-        console.log("✅ OAuth token acquired.");
         resolve(token);
       }
     });
@@ -84,7 +81,6 @@ async function fetchCalendarEvents(query = "") {
       description: event.description || ""
     }));
 
-    console.log("📅 Calendar events:", events);
     return { success: true, events, dateRange: { timeMin, timeMax } };
   } catch (err) {
     console.error("❌ Calendar fetch error:", err);
@@ -95,16 +91,13 @@ async function fetchCalendarEvents(query = "") {
 // ====== SEARCH GMAIL MESSAGES ======
 async function searchGmailMessages(searchQuery) {
   try {
-    console.log("🔍 Background: Searching Gmail for:", searchQuery);
     const token = await getAuthToken();
-    
+
     // Use Gmail search with q parameter
     const encodedQuery = encodeURIComponent(searchQuery);
     const apiUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodedQuery}&maxResults=10`;
-    
-    console.log("🔍 Background: Gmail API URL:", apiUrl);
+
     const listRes = await googleApiRequest(apiUrl, token);
-    console.log("🔍 Background: Gmail API response:", listRes);
 
     const messages = [];
     if (listRes.messages && listRes.messages.length > 0) {
@@ -120,11 +113,8 @@ async function searchGmailMessages(searchQuery) {
 
         messages.push({ id: msg.id, subject, from, date, snippet });
       }
-    } else {
-      console.log("🔍 Background: No messages found for query:", searchQuery);
     }
 
-    console.log("🔍 Background: Returning", messages.length, "Gmail search results");
     return { success: true, messages, query: searchQuery };
   } catch (err) {
     console.error("❌ Background: Gmail search error:", err);
@@ -154,7 +144,6 @@ async function fetchGmailThreads() {
       }
     }
 
-    console.log("📧 Gmail threads:", messages);
     return { success: true, messages };
   } catch (err) {
     console.error("❌ Gmail fetch error:", err);
@@ -177,8 +166,27 @@ async function askOpenAI(prompt, apiKey) {
       })
     });
 
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`OpenAI API Error: ${res.status} - ${errorText}`);
+    }
+
     const data = await res.json();
-    const content = data.choices?.[0]?.message?.content || "(No response)";
+
+    // Validate response structure
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid response format from OpenAI');
+    }
+
+    if (!Array.isArray(data.choices) || data.choices.length === 0) {
+      throw new Error('No choices in OpenAI response');
+    }
+
+    const content = data.choices[0]?.message?.content;
+    if (typeof content !== 'string') {
+      throw new Error('Invalid content in OpenAI response');
+    }
+
     return { success: true, content };
   } catch (err) {
     console.error("❌ OpenAI request error:", err);
