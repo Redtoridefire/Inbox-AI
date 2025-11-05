@@ -61,6 +61,61 @@
   background: linear-gradient(90deg, #1d4ed8 0%, #1e40af 100%);
 }
 
+.inboxai-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Status messages */
+.inboxai-status {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.status-message {
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  animation: slideIn 0.3s ease;
+}
+
+.status-info {
+  background: rgba(37, 99, 235, 0.2);
+  border-left: 3px solid #2563eb;
+  color: #93c5fd;
+}
+
+.status-success {
+  background: rgba(34, 197, 94, 0.2);
+  border-left: 3px solid #22c55e;
+  color: #86efac;
+}
+
+.status-warning {
+  background: rgba(234, 179, 8, 0.2);
+  border-left: 3px solid #eab308;
+  color: #fde047;
+}
+
+.status-error {
+  background: rgba(239, 68, 68, 0.2);
+  border-left: 3px solid #ef4444;
+  color: #fca5a5;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Response box */
 .inboxai-response {
   margin-top: 12px;
