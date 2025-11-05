@@ -60,7 +60,7 @@
   },
 
   "oauth2": {
-    "client_id": "804439227169-ostm1dnt9o6fsebbo4v9846qikl2fqv3.apps.googleusercontent.com",
+    "client_id": "865892797584-mo9ejhe6cdj03pvk8ptkuuodqcvvtfu9.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/calendar.readonly",
       "https://www.googleapis.com/auth/gmail.readonly",
