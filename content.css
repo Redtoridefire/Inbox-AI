@@ -1,31 +1,137 @@
-/* content.css – Dark black & blue theme for InboxAI panel */
+/* content.css – Modern dark theme with glassmorphism for InboxAI */
 
 #inboxai-root {
-  font-family: 'Inter', 'Roboto', sans-serif;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
   color: #e0e7ff;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Main chat container */
+/* Minimized state */
+#inboxai-root.minimized {
+  width: auto !important;
+  height: auto !important;
+}
+
+#inboxai-root.minimized .inboxai-container {
+  width: 60px;
+  height: 60px;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+#inboxai-root.minimized .inboxai-content,
+#inboxai-root.minimized .inboxai-input-row,
+#inboxai-root.minimized .inboxai-status,
+#inboxai-root.minimized .inboxai-response {
+  display: none !important;
+}
+
+#inboxai-root.minimized .inboxai-header {
+  margin: 0;
+  padding: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: none;
+  font-size: 28px;
+}
+
+#inboxai-root.minimized .minimize-btn {
+  display: none;
+}
+
+/* Main chat container - Modern glassmorphism */
 .inboxai-container {
-  background: linear-gradient(180deg, #0a0f1f 0%, #111827 100%);
-  border: 1px solid #1e3a8a;
-  border-radius: 12px;
-  box-shadow: 0 0 25px rgba(0, 30, 80, 0.5);
-  padding: 16px;
-  width: 100%;
+  background: linear-gradient(135deg, rgba(10, 15, 31, 0.95) 0%, rgba(17, 24, 39, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 16px;
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(99, 102, 241, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  width: 380px;
+  max-height: 600px;
   box-sizing: border-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
-/* Title */
+.inboxai-container:hover {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow:
+    0 15px 50px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(99, 102, 241, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Header with minimize button */
 .inboxai-header {
-  font-size: 18px;
-  font-weight: 600;
-  color: #60a5fa;
-  margin-bottom: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  position: relative;
 }
 
-/* Input row */
+.inboxai-title {
+  flex: 1;
+  text-align: center;
+  letter-spacing: -0.02em;
+}
+
+.minimize-btn {
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #93c5fd;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.minimize-btn:hover {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: rgba(99, 102, 241, 0.5);
+  transform: scale(1.05);
+}
+
+.minimize-btn:active {
+  transform: scale(0.95);
+}
+
+/* Content wrapper */
+.inboxai-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Input row - Modern style */
 .inboxai-input-row {
   display: flex;
   gap: 10px;
@@ -33,120 +139,243 @@
 
 .inboxai-input {
   flex: 1;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid #1e40af;
-  background: #0f172a;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(15, 23, 42, 0.6);
   color: #f1f5f9;
   outline: none;
   font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.inboxai-input::placeholder {
+  color: rgba(148, 163, 184, 0.6);
 }
 
 .inboxai-input:focus {
-  border-color: #2563eb;
+  border-color: rgba(99, 102, 241, 0.6);
+  background: rgba(15, 23, 42, 0.8);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
+/* Button - Modern gradient */
 .inboxai-button {
-  padding: 10px 14px;
+  padding: 12px 20px;
   border: none;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #2563eb 0%, #1e3a8a 100%);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   color: #ffffff;
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.inboxai-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.inboxai-button:hover::before {
+  left: 100%;
 }
 
 .inboxai-button:hover {
-  background: linear-gradient(90deg, #1d4ed8 0%, #1e40af 100%);
+  background: linear-gradient(135deg, #5558e3 0%, #7c3aed 100%);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.inboxai-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .inboxai-button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Status messages */
+/* Status messages - More modern */
 .inboxai-status {
-  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.inboxai-status::-webkit-scrollbar {
+  width: 4px;
+}
+
+.inboxai-status::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 2px;
+}
+
+.inboxai-status::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 2px;
 }
 
 .status-message {
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 13px;
-  animation: slideIn 0.3s ease;
+  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .status-info {
-  background: rgba(37, 99, 235, 0.2);
-  border-left: 3px solid #2563eb;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   color: #93c5fd;
 }
 
 .status-success {
-  background: rgba(34, 197, 94, 0.2);
-  border-left: 3px solid #22c55e;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
   color: #86efac;
 }
 
 .status-warning {
-  background: rgba(234, 179, 8, 0.2);
-  border-left: 3px solid #eab308;
+  background: rgba(234, 179, 8, 0.15);
+  border: 1px solid rgba(234, 179, 8, 0.3);
   color: #fde047;
 }
 
 .status-error {
-  background: rgba(239, 68, 68, 0.2);
-  border-left: 3px solid #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
   color: #fca5a5;
 }
 
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateX(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 
-/* Response box */
+/* Response box - Modern card */
 .inboxai-response {
-  margin-top: 12px;
-  padding: 12px;
-  background: #0f172a;
-  border-radius: 8px;
-  border: 1px solid #1e3a8a;
-  color: #dbeafe;
-  min-height: 60px;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #e2e8f0;
+  min-height: 120px;
+  max-height: 300px;
+  overflow-y: auto;
   white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.6;
+  transition: all 0.2s ease;
 }
 
-/* Thinking animation */
+.inboxai-response::-webkit-scrollbar {
+  width: 6px;
+}
+
+.inboxai-response::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 3px;
+}
+
+.inboxai-response::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 3px;
+}
+
+.inboxai-response::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.6);
+}
+
+.inboxai-response:empty {
+  min-height: 60px;
+}
+
+/* Thinking animation - Modern pulse */
 .inboxai-thinking {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 20px;
+  justify-content: center;
 }
 
 .inboxai-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #60a5fa;
-  animation: inboxai-bounce 1.2s infinite ease-in-out;
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 100%);
+  animation: inboxai-bounce 1.4s infinite ease-in-out;
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.5);
 }
 
+.inboxai-dot:nth-child(1) { animation-delay: 0s; }
 .inboxai-dot:nth-child(2) { animation-delay: 0.2s; }
 .inboxai-dot:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes inboxai-bounce {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.4; }
-  40% { transform: scale(1); opacity: 1; }
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.3;
+  }
+  40% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+/* Fade in animation for container */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.inboxai-container {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #inboxai-root {
+    bottom: 10px;
+    right: 10px;
+  }
+
+  .inboxai-container {
+    width: 340px;
+    max-height: 500px;
+  }
 }

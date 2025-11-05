@@ -6,6 +6,9 @@ export default function App() {
   const [response, setResponse] = useState("");
   const [thinking, setThinking] = useState(false);
   const [statusMessages, setStatusMessages] = useState([]);
+  const [isMinimized, setIsMinimized] = useState(() => {
+    return localStorage.getItem('inboxai-minimized') === 'true';
+  });
 
   // Data state
   const [openaiApiKey, setOpenaiApiKey] = useState(null);
@@ -243,6 +246,21 @@ export default function App() {
     return fullPrompt;
   };
 
+  // Toggle minimize
+  const toggleMinimize = () => {
+    const newState = !isMinimized;
+    setIsMinimized(newState);
+    localStorage.setItem('inboxai-minimized', newState.toString());
+  };
+
+  // Expand when clicking minimized container
+  const handleContainerClick = () => {
+    if (isMinimized) {
+      setIsMinimized(false);
+      localStorage.setItem('inboxai-minimized', 'false');
+    }
+  };
+
   // Main handler
   const handleAskAI = async () => {
     if (!prompt.trim()) return;
@@ -276,45 +294,61 @@ export default function App() {
   };
 
   return (
-    <div className="inboxai-container">
-      <div className="inboxai-header">InboxAI 🤖 GPT-4o-mini</div>
-
-      <div className="inboxai-input-row">
-        <input
-          className="inboxai-input"
-          type="text"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Ask about your emails or calendar..."
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleAskAI();
-          }}
-        />
-        <button className="inboxai-button" onClick={handleAskAI} disabled={thinking}>
-          {thinking ? "Thinking..." : "Ask AI"}
-        </button>
-      </div>
-
-      {/* Status messages */}
-      {statusMessages.length > 0 && (
-        <div className="inboxai-status">
-          {statusMessages.map((msg, idx) => (
-            <div key={idx} className={`status-message status-${msg.type}`}>
-              {msg.message}
-            </div>
-          ))}
+    <div id="inboxai-root" className={isMinimized ? 'minimized' : ''}>
+      <div className="inboxai-container" onClick={handleContainerClick}>
+        <div className="inboxai-header">
+          <div className="inboxai-title">💬 InboxAI — GPT-4o-mini</div>
+          <button
+            className="minimize-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMinimize();
+            }}
+            title="Minimize"
+          >
+            −
+          </button>
         </div>
-      )}
 
-      <div className="inboxai-response">
-        {thinking && (
-          <div className="inboxai-thinking">
-            <div className="inboxai-dot"></div>
-            <div className="inboxai-dot"></div>
-            <div className="inboxai-dot"></div>
+        <div className="inboxai-content">
+          {/* Status messages */}
+          {statusMessages.length > 0 && (
+            <div className="inboxai-status">
+              {statusMessages.map((msg, idx) => (
+                <div key={idx} className={`status-message status-${msg.type}`}>
+                  {msg.message}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="inboxai-response">
+            {thinking && (
+              <div className="inboxai-thinking">
+                <div className="inboxai-dot"></div>
+                <div className="inboxai-dot"></div>
+                <div className="inboxai-dot"></div>
+              </div>
+            )}
+            {!thinking && response && <div style={{ whiteSpace: 'pre-wrap' }}>{response}</div>}
           </div>
-        )}
-        {!thinking && response && <div style={{ whiteSpace: 'pre-wrap' }}>{response}</div>}
+
+          <div className="inboxai-input-row">
+            <input
+              className="inboxai-input"
+              type="text"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Ask about your emails or calendar..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleAskAI();
+              }}
+            />
+            <button className="inboxai-button" onClick={handleAskAI} disabled={thinking}>
+              {thinking ? "Thinking..." : "Ask AI"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
