@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InboxAI Settings</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background-color: #0b1623;
+      color: #e6f1ff;
+      width: 320px;
+      padding: 16px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #2388ff;
+      text-align: center;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      background: #101c2b;
+      border: 1px solid #1f6feb;
+      border-radius: 6px;
+      color: #e6f1ff;
+      outline: none;
+    }
+    button {
+      width: 100%;
+      background: #2388ff;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+    button:hover {
+      background: #2a98ff;
+    }
+    .status {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #9be9a8;
+    }
+  </style>
+</head>
+<body>
+  <h2>⚙️ InboxAI Settings</h2>
+
+  <label>🔑 OpenAI API Key</label>
+  <input id="apiKeyInput" type="password" placeholder="Enter your OpenAI API key..." />
+
+  <button id="saveBtn">Save Key</button>
+  <div class="status" id="statusMsg">Awaiting input...</div>
+
+  <hr style="border: 0; border-top: 1px solid #1f6feb; margin: 16px 0" />
+
+  <button id="authBtn">Connect Google Account</button>
+</body>
+<script src="popup.js"></script>
+</html>
