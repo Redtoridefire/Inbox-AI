@@ -1,4 +1,6 @@
 // inject.js
+console.log("🚀 InboxAI: inject.js executing");
+
 (function () {
   // ========== CHECK OR CREATE CONTAINER ==========
   let container = document.getElementById("inboxai-root");
@@ -6,115 +8,135 @@
     container = document.createElement("div");
     container.id = "inboxai-root";
     document.body.appendChild(container);
+    console.log("✅ InboxAI: Created #inboxai-root container");
+  } else {
+    console.log("✅ InboxAI: Found existing #inboxai-root container");
   }
 
-  // ========== STYLE CONTAINER ==========
-  Object.assign(container.style, {
-    display: "flex",
-    flexDirection: "column",
-    position: "fixed",
-    bottom: "20px",
-    right: "20px",
-    width: "340px",
-    height: "440px",
-    background: "#0b1623",
-    border: "1px solid #2388ff",
-    boxShadow: "0 0 14px rgba(35,136,255,0.35)",
-    borderRadius: "10px",
-    overflow: "hidden",
-    fontFamily: "Inter, Arial, sans-serif",
-    color: "#e6f1ff",
-    zIndex: "2147483647",
-  });
+  // ========== LOAD MINIMIZED STATE ==========
+  let isMinimized = localStorage.getItem('inboxai-minimized') === 'true';
+  if (isMinimized) {
+    container.classList.add('minimized');
+  }
 
-  // ========== HEADER ==========
+  // ========== CREATE MAIN CONTAINER ==========
+  const mainContainer = document.createElement("div");
+  mainContainer.className = "inboxai-container";
+
+  // ========== HEADER WITH MINIMIZE BUTTON ==========
   const header = document.createElement("div");
-  Object.assign(header.style, {
-    background: "#0e1b2a",
-    padding: "10px",
-    fontSize: "15px",
-    fontWeight: "600",
-    borderBottom: "1px solid #2388ff",
-    textAlign: "center",
-    color: "#e6f1ff",
-  });
-  header.textContent = "💬 InboxAI — GPT-4o-mini";
+  header.className = "inboxai-header";
+
+  const title = document.createElement("div");
+  title.className = "inboxai-title";
+  title.textContent = "💬 InboxAI — GPT-4o-mini";
+
+  const minimizeBtn = document.createElement("button");
+  minimizeBtn.className = "minimize-btn";
+  minimizeBtn.innerHTML = "−";
+  minimizeBtn.title = "Minimize";
+
+  minimizeBtn.onclick = () => {
+    isMinimized = !isMinimized;
+    if (isMinimized) {
+      container.classList.add('minimized');
+      minimizeBtn.innerHTML = "−";
+      localStorage.setItem('inboxai-minimized', 'true');
+    } else {
+      container.classList.remove('minimized');
+      minimizeBtn.innerHTML = "−";
+      localStorage.setItem('inboxai-minimized', 'false');
+    }
+  };
+
+  // Click to expand when minimized
+  mainContainer.onclick = () => {
+    if (isMinimized) {
+      isMinimized = false;
+      container.classList.remove('minimized');
+      localStorage.setItem('inboxai-minimized', 'false');
+    }
+  };
+
+  header.appendChild(title);
+  header.appendChild(minimizeBtn);
+
+  // ========== CONTENT WRAPPER ==========
+  const contentWrapper = document.createElement("div");
+  contentWrapper.className = "inboxai-content";
 
   // ========== CHAT AREA ==========
   const chatArea = document.createElement("div");
-  Object.assign(chatArea.style, {
-    flex: "1",
-    overflowY: "auto",
-    padding: "10px",
-    height: "340px",
-    scrollBehavior: "smooth",
-  });
+  chatArea.className = "inboxai-response";
+  chatArea.style.minHeight = "200px";
+  chatArea.style.maxHeight = "300px";
 
   // ========== INPUT AREA ==========
   const inputArea = document.createElement("div");
-  Object.assign(inputArea.style, {
-    display: "flex",
-    borderTop: "1px solid #2388ff",
-    background: "#0b1623",
-    padding: "6px",
-  });
+  inputArea.className = "inboxai-input-row";
 
-  const input = document.createElement("textarea");
-  Object.assign(input.style, {
-    flex: "1",
-    padding: "8px",
-    background: "#101c2b",
-    border: "1px solid #1f6feb",
-    borderRadius: "6px",
-    color: "#e6f1ff",
-    fontSize: "14px",
-    resize: "none",
-    outline: "none",
-  });
-  input.rows = 2;
-  input.placeholder = "Ask InboxAI something...";
+  const input = document.createElement("input");
+  input.type = "text";
+  input.className = "inboxai-input";
+  input.placeholder = "Ask about your emails or calendar...";
 
   const sendBtn = document.createElement("button");
-  Object.assign(sendBtn.style, {
-    background: "#2388ff",
-    color: "#fff",
-    border: "none",
-    borderRadius: "6px",
-    marginLeft: "6px",
-    padding: "0 16px",
-    cursor: "pointer",
-    fontWeight: "600",
-    transition: "background 0.2s ease",
-  });
-  sendBtn.textContent = "Send";
-  sendBtn.onmouseenter = () => (sendBtn.style.background = "#2a98ff");
-  sendBtn.onmouseleave = () => (sendBtn.style.background = "#2388ff");
+  sendBtn.className = "inboxai-button";
+  sendBtn.textContent = "Ask AI";
 
   inputArea.appendChild(input);
   inputArea.appendChild(sendBtn);
-  container.append(header, chatArea, inputArea);
+
+  // ========== STATUS MESSAGES AREA ==========
+  const statusArea = document.createElement("div");
+  statusArea.className = "inboxai-status";
+
+  contentWrapper.appendChild(statusArea);
+  contentWrapper.appendChild(chatArea);
+  contentWrapper.appendChild(inputArea);
+
+  mainContainer.appendChild(header);
+  mainContainer.appendChild(contentWrapper);
+  container.appendChild(mainContainer);
+
+  console.log("✅ InboxAI: UI elements created and appended to DOM");
+  console.log("✅ InboxAI: Container classes:", container.className);
+  console.log("✅ InboxAI: Minimized state:", isMinimized);
+
+  // ========== STATUS MESSAGE HELPER ==========
+  const addStatusMessage = (text, type = "info") => {
+    const statusMsg = document.createElement("div");
+    statusMsg.className = `status-message status-${type}`;
+    statusMsg.textContent = text;
+    statusArea.appendChild(statusMsg);
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+      statusMsg.style.transition = "all 0.3s ease";
+      statusMsg.style.opacity = "0";
+      statusMsg.style.transform = "translateX(-20px)";
+      setTimeout(() => statusMsg.remove(), 300);
+    }, 5000);
+  };
 
   // ========== SAFE MESSAGE HELPER ==========
   const addMessage = (sender, text, color = "#58a6ff") => {
-    const msg = document.createElement("div");
-    msg.style.margin = "8px 0";
-    msg.style.lineHeight = "1.5";
-    const label = document.createElement("b");
-    label.style.color = color;
-    label.style.fontWeight = "600";
-    label.textContent = `${sender}: `;
-    const body = document.createElement("div");
-    body.style.color = "#c9d1d9";
-    body.style.marginTop = "4px";
-    body.style.whiteSpace = "pre-wrap";
+    chatArea.textContent = ""; // Clear previous
 
-    // Use textContent to prevent XSS vulnerabilities
-    // Basic formatting: convert numbered lists to bullets
-    let formattedText = text.replace(/^\d+\.\s/gm, '• ');
-    body.textContent = formattedText;
+    if (sender === "System") {
+      addStatusMessage(text, "info");
+      return;
+    }
 
-    msg.append(label, body);
-    chatArea.appendChild(msg);
+    if (sender === "Error") {
+      chatArea.textContent = `❌ ${text}`;
+      chatArea.style.color = "#fca5a5";
+      return;
+    }
+
+    // Display AI response
+    chatArea.textContent = text;
+    chatArea.style.color = "#e2e8f0";
     chatArea.scrollTop = chatArea.scrollHeight;
   };
 
@@ -201,7 +223,7 @@
 
     // Fetch calendar if needed
     if (hasCalendarIntent) {
-      addMessage("System", "🔍 Checking calendar...", "#9be9a8");
+      addStatusMessage("🔍 Checking calendar...", "info");
       const calendarPromise = new Promise((resolve) => {
         const handler = (event) => {
           if (event.data?.type === "INBOXAI_CALENDAR_RESPONSE") {
@@ -225,7 +247,7 @@
     if (hasEmailIntent) {
       const searchTerms = extractSearchTerms(userInput);
       if (searchTerms) {
-        addMessage("System", `🔍 Searching emails for: "${searchTerms}"`, "#9be9a8");
+        addStatusMessage(`🔍 Searching emails for: "${searchTerms}"`, "info");
         const gmailPromise = new Promise((resolve) => {
           const handler = (event) => {
             if (event.data?.type === "INBOXAI_GMAIL_SEARCH_RESPONSE") {
@@ -258,18 +280,18 @@
     if (msg.type === "INBOXAI_STORAGE_RESPONSE") {
       openaiApiKey = msg.data?.openaiApiKey || null;
       if (openaiApiKey) {
-        addMessage("System", "🔑 API key loaded and ready!", "#9be9a8");
+        addStatusMessage("🔑 API key loaded and ready!", "success");
       }
     }
 
     if (msg.type === "INBOXAI_EMAIL_CONTEXT") {
       currentEmail = msg.data;
-      addMessage("System", `📥 Email: "${currentEmail.subject}" from ${currentEmail.sender}`, "#9be9a8");
+      addStatusMessage(`📥 Email: "${currentEmail.subject}" from ${currentEmail.sender}`, "info");
     }
 
     if (msg.type === "INBOXAI_INBOX_CONTEXT") {
       inboxOverview = msg.data || [];
-      addMessage("System", `📬 Inbox updated — ${inboxOverview.length} threads.`, "#9be9a8");
+      addStatusMessage(`📬 Inbox updated — ${inboxOverview.length} threads.`, "info");
     }
 
     if (msg.type === "INBOXAI_CALENDAR_RESPONSE") {
@@ -277,7 +299,7 @@
       if (success && events) {
         calendarEvents = events;
         const dateInfo = dateRange ? ` (${new Date(dateRange.timeMin).toLocaleDateString()} - ${new Date(dateRange.timeMax).toLocaleDateString()})` : "";
-        addMessage("System", `📅 Calendar loaded — ${events.length} event(s)${dateInfo}`, "#9be9a8");
+        addStatusMessage(`📅 Calendar loaded — ${events.length} event(s)${dateInfo}`, "success");
       }
     }
 
@@ -285,24 +307,32 @@
       const { success, messages, query, error } = msg.data || {};
       
       if (!success) {
-        addMessage("System", `❌ Email search failed: ${error || "Unknown error"}`, "#f85149");
+        addStatusMessage(`❌ Email search failed: ${error || "Unknown error"}`, "error");
         gmailSearchResults = [];
         return;
       }
-      
+
       if (messages && messages.length > 0) {
         gmailSearchResults = messages;
-        addMessage("System", `✉️ Found ${messages.length} email(s) for "${query}"`, "#9be9a8");
+        addStatusMessage(`✉️ Found ${messages.length} email(s) for "${query}"`, "success");
       } else {
         gmailSearchResults = [];
-        addMessage("System", `📭 No emails found for "${query}"`, "#ffa657");
+        addStatusMessage(`📭 No emails found for "${query}"`, "warning");
       }
     }
 
     if (msg.type === "INBOXAI_OPENAI_RESPONSE") {
       const { success, content, error } = msg.data || {};
-      if (success) addMessage("InboxAI", content);
-      else addMessage("Error", error || "Something went wrong.", "#f85149");
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Ask AI";
+
+      if (success) {
+        chatArea.textContent = content;
+        chatArea.style.color = "#e2e8f0";
+      } else {
+        chatArea.textContent = `❌ ${error || "Something went wrong."}`;
+        chatArea.style.color = "#fca5a5";
+      }
     }
   });
 
@@ -361,16 +391,20 @@
     if (!userInput) return;
 
     if (!openaiApiKey) {
-      addMessage("System", "⚠️ Missing API key. Save it in the popup.", "#f85149");
+      chatArea.textContent = "⚠️ Missing API key. Save it in the extension popup.";
+      chatArea.style.color = "#fde047";
       return;
     }
 
-    addMessage("You", userInput, "#9be9a8");
+    // Show user message and loading
+    chatArea.innerHTML = '<div class="inboxai-thinking"><div class="inboxai-dot"></div><div class="inboxai-dot"></div><div class="inboxai-dot"></div></div>';
     input.value = "";
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Thinking...";
 
     // Fetch relevant data and wait for it to complete
     await fetchRelevantData(userInput);
-    
+
     // Now send to OpenAI with all the data
     window.postMessage(
       { type: "INBOXAI_OPENAI_CALL", prompt: buildPrompt(userInput), apiKey: openaiApiKey },

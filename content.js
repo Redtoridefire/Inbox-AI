@@ -1,12 +1,28 @@
 // content.js
+console.log("✅ InboxAI: Content script loaded");
+
+// === INJECT CSS ===
+(function injectCSS() {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = chrome.runtime.getURL('content.css');
+  link.onload = () => console.log("✅ InboxAI: CSS loaded successfully");
+  link.onerror = () => console.error("❌ InboxAI: CSS failed to load");
+  (document.head || document.documentElement).appendChild(link);
+  console.log("✅ InboxAI: CSS link added to page", link.href);
+})();
+
 // === INJECT THE SCRIPT INTO THE PAGE ===
 (function injectScript() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('inject.js');
   script.onload = function() {
+    console.log("✅ InboxAI: inject.js loaded successfully");
     this.remove();
   };
+  script.onerror = () => console.error("❌ InboxAI: inject.js failed to load");
   (document.head || document.documentElement).appendChild(script);
+  console.log("✅ InboxAI: inject.js script added to page", script.src);
 })();
 
 // === Listen for messages from the injected page ===
